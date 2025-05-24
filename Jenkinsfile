@@ -1,10 +1,6 @@
 pipeline {
   agent any
 
-  environment {
-    // Example: PATH = "${tool 'NodeJS'}/bin:${env.PATH}"
-  }
-
   stages {
     stage('Checkout') {
       steps {
@@ -15,7 +11,6 @@ pipeline {
     stage('Install') {
       steps {
         echo 'Installing dependencies...'
-        // Use --legacy-peer-deps to bypass the conflict
         bat 'npm install --legacy-peer-deps'
       }
     }
