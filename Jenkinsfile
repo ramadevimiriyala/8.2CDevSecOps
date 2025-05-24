@@ -1,41 +1,30 @@
 pipeline {
-  agent any
+    agent any
 
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        SONAR_TOKEN = credentials('SONAR_TOKEN')  // Reference your Jenkins credential
     }
 
-    stage('Install') {
-  steps {
-    echo 'Installing dependencies...'
-    bat 'npm install --legacy-peer-deps'
-  }
-}
-
-
-    stage('Audit') {
-      steps {
-        echo 'Auditing packages...'
-        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-          bat 'npm audit --json > audit-report.json'
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/ramadevimiriyala/8.2CDevSecOps.git', branch: 'main'
+            }
         }
-      }
+        stage('Install') {
+            steps {
+                bat 'npm install --legacy-peer-deps'
+            }
+        }
+        stage('SonarCloud Analysis') {
+            steps {
+                bat '''
+                curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-windows.zip
+                tar -xf sonar-scanner.zip
+                set PATH=%cd%\\sonar-scanner-4.8.0.2856-windows\\bin;%PATH%
+                sonar-scanner
+                '''
+            }
+        }
     }
-
-    stage('Test') {
-      steps {
-        echo 'Running tests...'
-        bat 'npm test || exit 0'
-      }
-    }
-  }
-
-  post {
-    always {
-      echo 'Pipeline completed. Check results above.'
-    }
-  }
 }
