@@ -9,11 +9,12 @@ pipeline {
     }
 
     stage('Install') {
-      steps {
-        echo 'Installing dependencies...'
-        bat 'npm install --legacy-peer-deps'
-      }
-    }
+  steps {
+    echo 'Installing dependencies...'
+    bat 'npm install --legacy-peer-deps'
+  }
+}
+
 
     stage('Audit') {
       steps {
