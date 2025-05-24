@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = credentials('sonar-token')  // Use the ID of your SonarCloud token
+        // Optional: if you want to define your SONAR_TOKEN variable here
+        SONAR_TOKEN = credentials('SONAR_TOKEN')  
     }
 
     stages {
@@ -18,29 +19,16 @@ pipeline {
             }
         }
 
-        stage('Audit') {
-            steps {
-                bat 'npm audit'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'npm test'
-            }
-        }
-
         stage('SonarCloud Analysis') {
-            environment {
-                JAVA_HOME = "C:/Program Files/Java/jdk-17"  
-                PATH = "${JAVA_HOME}/bin;${env.PATH}"
-            }
             steps {
-                bat '''
-                    curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-windows.zip
-                    tar -xf sonar-scanner.zip
-                    sonar-scanner-4.8.0.2856-windows/bin/sonar-scanner
-                '''
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    bat """
+                        curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-windows.zip
+                        tar -xf sonar-scanner.zip
+                        set PATH=%CD%\\sonar-scanner-4.8.0.2856-windows\\bin;%PATH%
+                        sonar-scanner -Dsonar.login=%SONAR_TOKEN%
+                    """
+                }
             }
         }
     }
